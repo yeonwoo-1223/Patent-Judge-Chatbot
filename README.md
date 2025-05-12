@@ -26,3 +26,7 @@
 
 ## :date: 프로젝트 시작일
 #### 2025년 5월 8일 ####
+
+## :mag: 참고 GitHub 저장소
+**sohnjunior / Patent-Attorney**
+https://github.com/sohnjunior/Patent-Attorney

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>Patent Judge Chatbot</title>
+    <!-- Font Awesome 아이콘 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f8f8;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 15px 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header img {
+            width: 32px;
+            height: 32px;
+        }
+
+        #image-upload-container {
+            padding: 10px 0;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: flex-start;
+            padding-left: 20px;
+        }
+
+        #chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 90vw;
+            margin: 10px auto 0;
+            box-sizing: border-box;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 300px;
+        }
+
+        .message-row {
+            display: flex;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-row.bot {
+            justify-content: flex-start;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .user-message {
+            background-color: #DCF8C6;
+            border-bottom-right-radius: 4px;
+            text-align: right;
+        }
+
+        .bot-message {
+            background-color: #ECECEC;
+            border-bottom-left-radius: 4px;
+            text-align: left;
+        }
+
+        #input-form.centered {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vw;
+            max-width: 800px;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            border-radius: 10px;
+            padding: 10px 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #input-form.bottom-fixed {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90vw;
+            max-width: 900px;
+            background: white;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            border-radius: 10px 10px 0 0;
+            padding: 10px 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #question {
+            flex-grow: 1;
+            resize: none;
+            min-height: 40px;
+            max-height: 100px;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 16px;
+            font-family: inherit;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            max-width: 100%;
+        }
+
+        #question:focus {
+            border-color: #4CAF50;
+        }
+
+        #send-btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+
+        #send-btn:hover {
+            background-color: #45a049;
+        }
+
+        #chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-container::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        #loading {
+            text-align: center;
+            color: #666;
+            padding: 10px;
+            font-size: 16px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span>📄 특허 판례 챗봇</span>
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="챗봇 아이콘" />
+    </header>
+
+    <div id="image-upload-container">
+        <form action="/upload_image" method="post" enctype="multipart/form-data" id="image-upload-form">
+            <label for="image">이미지 업로드:</label>
+            <input type="file" name="image" id="image" required />
+            <button type="submit">제출</button>
+        </form>
+    </div>
+
+    <div id="chat-container"></div>
+
+    <form id="input-form" class="centered" autocomplete="off">
+        <textarea id="question" placeholder="궁금한 내용을 물어보세요. (예: 기존 특허와 유사한 디자인인지 확인해주세요.)" rows="1" required></textarea>
+        <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+    </form>
+
+    <div id="loading"><i class="fas fa-spinner fa-spin"></i> 응답을 기다리는 중...</div>
+
+    <script>
+        const form = document.getElementById('input-form');
+        const textarea = document.getElementById('question');
+        const chatContainer = document.getElementById('chat-container');
+        const loading = document.getElementById('loading');
+
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                form.requestSubmit();
+            }
+        });
+
+        function addMessage(text, type) {
+            const row = document.createElement('div');
+            row.className = 'message-row ' + (type === 'user-message' ? 'user' : 'bot');
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message ' + type;
+            bubble.textContent = text;
+
+            row.appendChild(bubble);
+            chatContainer.appendChild(row);
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = textarea.value.trim();
+            if (!question) return;
+
+            addMessage(question, 'user-message');
+            textarea.value = '';
+            textarea.style.height = 'auto';
+
+            if (chatContainer.childElementCount === 1) {
+                form.classList.remove('centered');
+                form.classList.add('bottom-fixed');
+            }
+
+            scrollToBottom();
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/ask_bot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question})
+                });
+                const data = await response.json();
+
+                if (data.error) {
+                    addMessage('오류: ' + data.error, 'bot-message');
+                } else {
+                    addMessage(data.answer, 'bot-message');
+                }
+            } catch (err) {
+                addMessage('서버 통신 오류 발생', 'bot-message');
+            }
+
+            loading.style.display = 'none';
+            scrollToBottom();
+        });
+
+        window.addEventListener('load', () => {
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+    </script>
+</body>
+</html>

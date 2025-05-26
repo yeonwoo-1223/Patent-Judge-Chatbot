@@ -176,3 +176,4 @@ streamlit run main.py
 [이명혜](https://github.com/LeeMyunghye) – QA
 > 좋은 조원들 덕분에 꽤 높은 완성도가 보인 것 같습니다.
 
+  # 공백 한 줄 추가

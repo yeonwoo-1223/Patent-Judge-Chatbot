@@ -266,7 +266,7 @@ def chatbot_main():
         vector_store_rate.save_local('vector_store_rate')
 
     def chatbot(query, isType):
-        print(f"챗봇 텍스트 세션 스테이트 : ",st.session_state["messages"])
+        print(f"특허 챗봇 텍스트 세션 스테이트 : ",st.session_state["messages"])
         # 기본 메시지 화면에 표시
         for message in st.session_state["messages"]:
             with st.chat_message(message["role"]):

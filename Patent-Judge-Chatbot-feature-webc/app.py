@@ -21,7 +21,7 @@ client = OpenAI(api_key="API_KEY")
 app = Flask(__name__)
 
 # ——— 이미지 유사도 모델 미리 로드 ———
-TRAIN_FOLDER = "./uploads/find_similar_images"
+TRAIN_FOLDER = "./static/find_similar_images"
 IMG_PATHS, IMG_FEATURES = initialize_index(TRAIN_FOLDER)
 
 # 홈화면
@@ -37,7 +37,7 @@ def upload_image():
         return jsonify({'error': '이미지 업로드 실패'}), 400
 
     # 1) 업로드된 파일 저장
-    upload_dir = './uploads/load_dataset_features'
+    upload_dir = './static/uploads'
     os.makedirs(upload_dir, exist_ok=True)
     filename = image.filename
     input_path = os.path.join(upload_dir, filename)
@@ -51,7 +51,7 @@ def upload_image():
     for path, score in similar:
         name = os.path.basename(path)
         app_no = os.path.splitext(name)[0]
-        url = url_for('static', filename=f"Resources/mark_img/{name}", _external=False)
+        url = url_for('static', filename=f"find_similar_images/{name}", _external=False)
         results.append({
             'url': url,
             'application_number': app_no,
@@ -70,7 +70,7 @@ def upload_image():
         {"role": "user",   "content": raw_message}
     ]
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         messages=chat_messages
     )
     bot_message = resp.choices[0].message.content
@@ -120,6 +120,6 @@ def ask_bot():
     return jsonify({'answer': answer})
 
 if __name__ == '__main__':
-    if not os.path.exists('uploads'):
-        os.makedirs('uploads')
+    if not os.path.exists('./static/uploads'):
+        os.makedirs('./static/uploads')
     app.run(debug=True)

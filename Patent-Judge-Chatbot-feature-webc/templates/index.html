@@ -180,6 +180,27 @@
             font-size: 16px;
             display: none;
         }
+
+        .image-gallery {
+          display: flex;
+          gap: 8px;
+          margin-top: 8px;
+        }
+        .image-item {
+          text-align: center;
+        }
+        .image-item img {
+          max-width: 100px;
+          border-radius: 6px;
+          display: block;
+          margin: 0 auto;
+        }
+        .image-item .info {
+          font-size: 0.85em;
+          margin-top: 4px;
+          color: #555;
+          white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -239,6 +260,64 @@
         function scrollToBottom() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+
+            <!-- 추가된 JS: 이미지 업로드 후 말풍선 + 갤러리 렌더링 -->
+
+      const imgForm = document.getElementById('image-upload-form');
+      imgForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(imgForm);
+
+        addMessage('이미지를 업로드하고 있어요…', 'user-message');
+        loading.style.display = 'block';
+
+        try {
+          const res  = await fetch('/upload_image', { method: 'POST', body: formData });
+          const json = await res.json();
+
+          if (json.error) {
+            addMessage('오류: ' + json.error, 'bot-message');
+          } else {
+            // 1) 챗봇 텍스트 말풍선
+            addMessage(json.answer, 'bot-message');
+
+            // 2) 이미지 갤러리 말풍선
+            const row = document.createElement('div');
+            row.className = 'message-row bot';
+            const bubble = document.createElement('div');
+            bubble.className = 'message bot-message';
+
+            const gallery = document.createElement('div');
+            gallery.className = 'image-gallery';
+
+            json.results.forEach(r => {
+              const item = document.createElement('div');
+              item.className = 'image-item';
+
+              const img = document.createElement('img');
+              img.src = r.url;
+              img.alt = r.application_number;
+              item.appendChild(img);
+
+              const info = document.createElement('div');
+              info.className = 'info';
+              info.textContent = `출원번호: ${r.application_number}\n유사도: ${(r.score*100).toFixed(2)}%`;
+              item.appendChild(info);
+
+              gallery.appendChild(item);
+            });
+
+            bubble.appendChild(gallery);
+            row.appendChild(bubble);
+            chatContainer.appendChild(row);
+          }
+        } catch (err) {
+          addMessage('이미지 처리 중 오류가 발생했습니다.', 'bot-message');
+        }
+
+        loading.style.display = 'none';
+        scrollToBottom();
+      });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();

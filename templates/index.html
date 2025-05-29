@@ -5,45 +5,13 @@
   <title>Patent Judge Chatbot</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    body.light {
-      background-color: #f8f8f8;
-      color: #000;
-    }
-
-    body.dark {
-      background-color: #121212;
-      color: #eee;
-    }
-
-    body.dark #chat-container {
-      background: #1e1e1e;
-    }
-
-    body.dark .user-message {
-      background-color: #2e7d32;
-      color: white;
-    }
-
-    body.dark .bot-message {
-      background-color: #333;
-      color: white;
-    }
-
-    body.dark #image-upload-container {
-      background: #2c2c2c;
-      border-color: #444;
-    }
-
-    body.dark #input-form.bottom-fixed {
-      background: #1a1a1a;
-    }
-
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       height: 100vh;
       display: flex;
       flex-direction: column;
+      background-color: #f8f8f8;
       padding: 0 20px;
     }
 
@@ -61,6 +29,17 @@
     header img {
       width: 32px;
       height: 32px;
+    }
+
+    #image-upload-container {
+      padding: 10px 0;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      max-width: 100%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: flex-start;
+      padding-left: 20px;
     }
 
     #chat-container {
@@ -112,22 +91,6 @@
       text-align: left;
     }
 
-    #image-upload-container {
-      position: fixed;
-      bottom: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      padding: 8px 15px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      z-index: 11;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     #input-form.bottom-fixed {
       position: fixed;
       bottom: 0;
@@ -158,6 +121,7 @@
       box-sizing: border-box;
       outline: none;
       transition: border-color 0.2s;
+      max-width: 100%;
     }
 
     #question:focus {
@@ -198,36 +162,20 @@
       padding: 10px;
       font-size: 16px;
       display: none;
-      font-weight: bold;
-    }
-
-    #loading::after {
-      content: '';
-      display: inline-block;
-      animation: dots 1.2s steps(3, end) infinite;
-    }
-
-    @keyframes dots {
-      0%   { content: ''; }
-      33%  { content: '.'; }
-      66%  { content: '..'; }
-      100% { content: '...'; }
     }
 
     .image-gallery {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
+      gap: 8px;
+      margin-top: 8px;
     }
 
     .image-item {
       text-align: center;
-      width: 110px;
     }
 
     .image-item img {
-      max-width: 100%;
+      max-width: 100px;
       border-radius: 6px;
       display: block;
       margin: 0 auto;
@@ -240,36 +188,46 @@
       white-space: pre-wrap;
     }
 
-    body.dark .image-item .info {
-      color: #eee;
+    .wave span {
+      display: inline-block;
+      animation: wave 1s infinite;
+    }
+    .wave span:nth-child(1) { animation-delay: 0s; }
+    .wave span:nth-child(2) { animation-delay: 0.1s; }
+    .wave span:nth-child(3) { animation-delay: 0.2s; }
+    .wave span:nth-child(4) { animation-delay: 0.3s; }
+    .wave span:nth-child(5) { animation-delay: 0.4s; }
+    .wave span:nth-child(6) { animation-delay: 0.5s; }
+    .wave span:nth-child(7) { animation-delay: 0.6s; }
+
+    @keyframes wave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
   </style>
 </head>
-<body class="light">
+<body>
   <header>
     <span>📄 특허 판례 챗봇</span>
     <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="챗봇 아이콘" />
-    <label style="margin-left:auto; display:flex; align-items:center; gap:5px; font-size: 14px;">
-      <input type="checkbox" id="darkToggle" /> 🌙 다크모드
-    </label>
   </header>
 
-  <div id="chat-container"></div>
-
   <div id="image-upload-container">
-    <form action="/upload_image" method="post" enctype="multipart/form-data" id="image-upload-form">
-      <label for="file">유사도 확인할 이미지 업로드:</label>
-      <input type="file" name="image" id="file" required />
-      <button type="submit">검색</button>
+    <form id="image-upload-form" enctype="multipart/form-data" onsubmit="return false;">
+      <label for="image">유사도 확인할 이미지 업로드:</label>
+      <input type="file" name="image" id="image" required />
+      <button type="button" id="image-submit-btn">검색</button>
     </form>
   </div>
+
+  <div id="chat-container"></div>
 
   <form id="input-form" class="bottom-fixed" autocomplete="off">
     <textarea id="question" placeholder="궁금한 내용을 물어보세요. (예: 기존 특허와 유사한 디자인인지 확인해주세요.)" rows="1" required></textarea>
     <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
   </form>
 
-  <div id="loading"><span>답변 생성 중</span><span id="dots"></span></div>
+  <div id="loading"><i class="fas fa-spinner fa-spin"></i> 응답을 기다리는 중...</div>
 
   <script>
     const form = document.getElementById('input-form');
@@ -299,21 +257,69 @@
 
       row.appendChild(bubble);
       chatContainer.appendChild(row);
-      scrollToBottom();
     }
 
     function scrollToBottom() {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    const imgForm = document.getElementById('image-upload-form');
-    imgForm.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(imgForm);
+      const question = textarea.value.trim();
+      if (!question) return;
+
+      addMessage(question, 'user-message');
+      textarea.value = '';
+      textarea.style.height = 'auto';
+
+      scrollToBottom();
+
+      const row = document.createElement('div');
+      row.className = 'message-row bot';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message bot-message wave';
+      const loadingText = '답변 생성 중...';
+      for (let i = 0; i < loadingText.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = loadingText[i];
+        bubble.appendChild(span);
+      }
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+
+      loading.style.display = 'block';
+
+      try {
+        const response = await fetch('/ask_bot', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({question})
+        });
+        const data = await response.json();
+
+        chatContainer.removeChild(row);
+
+        if (data.error) {
+          addMessage('오류: ' + data.error, 'bot-message');
+        } else {
+          addMessage(data.answer, 'bot-message');
+        }
+      } catch (err) {
+        chatContainer.removeChild(row);
+        addMessage('서버 통신 오류 발생', 'bot-message');
+      }
+
+      loading.style.display = 'none';
+      scrollToBottom();
+    });
+
+    document.getElementById('image-submit-btn').addEventListener('click', async () => {
+      const form = document.getElementById('image-upload-form');
+      const formData = new FormData(form);
 
       addMessage('이미지를 업로드하고 있어요…', 'user-message');
       loading.style.display = 'block';
-      startDotsAnimation();
 
       try {
         const res = await fetch('/upload_image', {
@@ -361,68 +367,12 @@
       }
 
       loading.style.display = 'none';
-      stopDotsAnimation();
       scrollToBottom();
     });
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const question = textarea.value.trim();
-      if (!question) return;
-
-      addMessage(question, 'user-message');
-      textarea.value = '';
-      textarea.style.height = 'auto';
-
-      scrollToBottom();
-      loading.style.display = 'block';
-
-      startDotsAnimation(); 
-
-
-      try {
-        const response = await fetch('/ask_bot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question })
-        });
-        const data = await response.json();
-
-        if (data.error) {
-          addMessage('오류: ' + data.error, 'bot-message');
-        } else {
-          addMessage(data.answer, 'bot-message');
-        }
-      } catch (err) {
-        addMessage('서버 통신 오류 발생', 'bot-message');
-      }
-
-      loading.style.display = 'none';
-      scrollToBottom();
+    window.addEventListener('load', () => {
+      textarea.style.height = textarea.scrollHeight + 'px';
     });
-
-    // ✅ 다크모드 토글 기능
-    document.getElementById('darkToggle').addEventListener('change', function () {
-      document.body.classList.toggle('dark', this.checked);
-      document.body.classList.toggle('light', !this.checked);
-    });
-    let dotInterval;
-
-function startDotsAnimation() {
-  const dots = document.getElementById('dots');
-  let count = 0;
-  dotInterval = setInterval(() => {
-    count = (count + 1) % 4;
-    dots.textContent = '.'.repeat(count);
-  }, 400);
-}
-
-function stopDotsAnimation() {
-  clearInterval(dotInterval);
-  document.getElementById('dots').textContent = '';
-}
-
-
   </script>
 </body>
 </html>

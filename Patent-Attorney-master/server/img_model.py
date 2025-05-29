@@ -5,8 +5,8 @@ from PIL import Image
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-# 사전 학습된 모델 로드 (ResNet18)
-model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
+# 사전 학습된 모델 로드 (ResNet50)
+model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True)
 model.eval()
 
 # 전처리 함수

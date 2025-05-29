@@ -1,6 +1,7 @@
 # ▶ Python 관련
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
 *.log
 *.egg
@@ -11,6 +12,7 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 db.sqlite3-journal
+cython_debug/
 
 # ▶ 가상환경
 .env
@@ -21,18 +23,24 @@ ENV/
 env.bak/
 venv.bak/
 
-# ▶ Jupyter 관련
+# ▶ Jupyter / IPython 관련
 .ipynb_checkpoints/
 .pytest_cache/
 .mypy_cache/
 .dmypy.json
+dmypy.json
 .pyre/
 .pytype/
+profile_default/
+ipython_config.py
 
 # ▶ IDE & 편집기 관련
 .vscode/
 .idea/
 *.swp
+.spyderproject
+.spyproject
+.ropeproject
 
 # ▶ 빌드, 배포 관련
 build/
@@ -49,17 +57,18 @@ wheels/
 share/python-wheels/
 .installed.cfg
 MANIFEST
-cython_debug/
 target/
 
-# ▶ PEP 582
-__pypackages__/
+# ▶ 문서화 (Sphinx, MkDocs 등)
+docs/_build/
+site
 
-# ▶ Flask 관련
+# ▶ Flask, Django 등 웹 프레임워크
 instance/
 .webassets-cache/
+local_settings.py
 
-# ▶ coverage & 테스트
+# ▶ 테스트, 커버리지
 .coverage
 .coverage.*
 .cache
@@ -68,9 +77,33 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
+htmlcov/
+.tox/
+.nox/
+cover/
 
-# ▶ Sphinx 문서화
-docs/_build/
+# ▶ Scrapy
+.scrapy
+
+# ▶ Celery
+celerybeat-schedule
+celerybeat.pid
+
+# ▶ Poetry / pipenv / pdm / uv 설정 파일
+# Pipfile.lock
+# poetry.lock
+# uv.lock
+# pdm.lock
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# ▶ PEP 582
+__pypackages__/
+
+# ▶ 기타 설정 파일
+.ruff_cache/
+.pypirc
 
 # ▶ Docker 관련
 docker/
@@ -78,14 +111,6 @@ docker/
 **/Dockerfile
 **/docker-compose.yml
 docker-compose.override.yml
+
+# ▶ 기타 프로젝트 관련
 static/find_similar_images/
-
-# ▶ PyCharm 설정
-# .idea/
-
-# ▶ 기타 프로젝트 도구
-.pdm.toml
-.pdm-python
-.pdm-build/
-.ruff_cache/
-.pypirc

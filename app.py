@@ -126,6 +126,7 @@ def ask_bot():
                          "role": "user",
                          "content": f"이 문서 기반으로 다음 질문에 답해주세요:\n\n{question}"
                          }
+
         ]
 
         response = client.chat.completions.create(
@@ -139,7 +140,7 @@ def ask_bot():
 
     return jsonify({'answer': answer})
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     if not os.path.exists('./static/uploads'):
         os.makedirs('./static/uploads')
     app.run(debug=True)

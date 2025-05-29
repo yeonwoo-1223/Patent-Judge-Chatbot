@@ -7,7 +7,6 @@
 ## 이미지 유사도 확인
 - ReNet 사용
 - train 파일 내 상표 150장의 이미지를 기반으로 사용자가 입력한 사진과 유사도 비교
-- 추후 사진 더 추가 예정
 
 ## 참고 GitHub 저장소
 **sohnjunior / Patent-Attorney**

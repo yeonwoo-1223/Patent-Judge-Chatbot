@@ -204,12 +204,59 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
     }
+
+    body.dark {
+  background-color: #1e1e1e;
+  color: #eee;
+}
+
+body.dark header {
+  background-color: #333;
+  color: #fff;
+}
+
+body.dark #chat-container,
+body.dark #input-form.bottom-fixed,
+body.dark .bot-message,
+body.dark .user-message {
+  background-color: #2e2e2e;
+  color: #f0f0f0;
+}
+
+body.dark #question {
+  background-color: #444;
+  color: #f0f0f0;
+  border-color: #666;
+}
+
+body.dark .image-item .info {
+  color: #ccc;
+}
+
+body.dark #image-upload-container {
+  background-color: #2e2e2e;
+  border-bottom: 1px solid #444;
+}
+
+body.dark #image-upload-container label,
+body.dark #image-upload-container input,
+body.dark #image-upload-container button {
+  color: #f0f0f0;
+  background-color: #444;
+  border: 1px solid #666;
+}
+
+
   </style>
 </head>
 <body>
   <header>
     <span>📄 특허 판례 챗봇</span>
     <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="챗봇 아이콘" />
+    <button id="dark-toggle" style="margin-left:auto; background:none; border:none; color:white; font-size:20px; cursor:pointer;">
+  🌙
+</button>
+
   </header>
 
   <div id="image-upload-container">
@@ -373,6 +420,12 @@
     window.addEventListener('load', () => {
       textarea.style.height = textarea.scrollHeight + 'px';
     });
+
+    document.getElementById('dark-toggle').addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    });
+
+
   </script>
 </body>
 </html>

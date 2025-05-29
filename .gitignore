@@ -1,0 +1,91 @@
+# ▶ Python 관련
+__pycache__/
+*.py[cod]
+*.so
+*.log
+*.egg
+*.egg-info/
+*.manifest
+*.spec
+.Python
+*.sqlite3
+db.sqlite3
+db.sqlite3-journal
+
+# ▶ 가상환경
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ▶ Jupyter 관련
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# ▶ IDE & 편집기 관련
+.vscode/
+.idea/
+*.swp
+
+# ▶ 빌드, 배포 관련
+build/
+dist/
+downloads/
+develop-eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+.installed.cfg
+MANIFEST
+cython_debug/
+target/
+
+# ▶ PEP 582
+__pypackages__/
+
+# ▶ Flask 관련
+instance/
+.webassets-cache/
+
+# ▶ coverage & 테스트
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ▶ Sphinx 문서화
+docs/_build/
+
+# ▶ Docker 관련
+docker/
+.docker/
+**/Dockerfile
+**/docker-compose.yml
+docker-compose.override.yml
+static/find_similar_images/
+
+# ▶ PyCharm 설정
+# .idea/
+
+# ▶ 기타 프로젝트 도구
+.pdm.toml
+.pdm-python
+.pdm-build/
+.ruff_cache/
+.pypirc

@@ -16,7 +16,11 @@ if not api_key:
     raise ValueError("OPENAI_API_KEY 환경변수가 설정되어 있지 않습니다.")
 
 # OpenAI 클라이언트 생성
+<<<<<<< HEAD
 client = OpenAI(api_key=api_key) 
+=======
+client = OpenAI(api_key=api_key)
+>>>>>>> release/final
 
 app = Flask(__name__)
 
@@ -48,11 +52,10 @@ def upload_image():
         similar = search_similar(input_path, IMG_PATHS, IMG_FEATURES, top_k=5)
     except Exception as e:
         import traceback
-        traceback.print_exc()   # 터미널에 전체 스택 트레이스 출력
-        # 클라이언트에도 오류 메시지 내려줍니다.
+        traceback.print_exc()
         return jsonify({'error': f"이미지 유사도 검색 중 오류: {e}"}), 500
 
-    # 3) 결과를 URL, 출원번호, 유사도 형태로 구조화
+    # 3) 결과 구조화
     results = []
     for path, score in similar:
         name = os.path.basename(path)
@@ -64,16 +67,20 @@ def upload_image():
             'score': float(f"{score:.4f}")
         })
 
-    # 4) 챗봇 말투용 요약 메시지(raw)
-    lines = [f"✅ '{filename}' 업로드 완료! 유사한 이미지를 찾아볼게요."]
-    for idx, r in enumerate(results, start=1):
-        lines.append(f"{idx}. 출원번호 {r['application_number']} | 유사도 {r['score']*100:.2f}%")
+    # 4) 텍스트 기반 요약 메시지 구성
+    lines = [f"{idx}. 출원번호 {r['application_number']} | 유사도 {r['score']*100:.2f}%" for idx, r in enumerate(results, start=1)]
     raw_message = "\n".join(lines)
 
-    # 5) OpenAI Chat API 호출 → 자연스러운 대화체로 가공
+    # 5) GPT 호출
     chat_messages = [
-        {"role": "system", "content": "당신은 친절한 챗봇입니다. 아래 정보를 마크다운 이미지 태그(![출원번호](URL))를 사용해 이미지가 바로 보이도록 설명해주세요. 각 항목에 출원번호와 유사도도 함께 포함하세요."},
-        {"role": "user",   "content": raw_message}
+        {
+            "role": "system",
+            "content": "당신은 친절한 챗봇입니다. 사용자가 업로드한 이미지에 대해 아래 정보를 자연스럽게 요약해서 출력해주세요. 마크다운 이미지 태그는 사용하지 말고, 출원번호와 유사도 위주로 정리해주세요."
+        },
+        {
+            "role": "user",
+            "content": raw_message
+        }
     ]
     try:
         resp = client.chat.completions.create(
@@ -81,18 +88,18 @@ def upload_image():
             messages=chat_messages
         )
         bot_message = resp.choices[0].message.content
+        bot_message = f"✅ '{filename}' 업로드 완료! 유사한 이미지를 찾아볼게요.\n\n" + bot_message
     except Exception as e:
-        # RateLimitError 또는 기타 모든 오류 시에도 raw_message 로 graceful fallback
         print("▶ Chat API 오류:", e)
-        bot_message = raw_message
+        bot_message = f"✅ '{filename}' 업로드 완료! 유사한 이미지를 찾아볼게요.\n\n" + raw_message
 
-    # 6) JSON 반환 (말풍선 텍스트 + 구조화된 결과)
+    # 6) 반환
     return jsonify({
         'answer': bot_message,
         'results': results
     })
 
-# 질문 처리 및 GPT 호출 (비동기 JSON 반환)
+# 질문 처리
 @app.route('/ask_bot', methods=['POST'])
 def ask_bot():
     data = request.get_json()
@@ -102,17 +109,14 @@ def ask_bot():
         return jsonify({'error': '질문을 입력해주세요.'})
 
     try:
-        #FAISS 로드
-        faiss_path = "Resources/vector_store_law" # 경로 확인
+        # FAISS 불러오기
+        faiss_path = "Resources/vector_store_law"
         vector_store = FAISS.load_local(faiss_path, OpenAIEmbeddings(), allow_dangerous_deserialization=True)
 
-        #유사 문서 검색
-        docs = vector_store.similarity_search(question, k=3)  # 상위 3개 문서
-
-        #context 구성
+        # 유사 문서 검색
+        docs = vector_store.similarity_search(question, k=3)
         context = "\n\n".join([doc.page_content for doc in docs])
 
-        #GPT 메시지 구성
         messages = [
             {
                 "role": "system",

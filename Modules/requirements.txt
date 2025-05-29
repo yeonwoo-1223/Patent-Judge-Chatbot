@@ -1,0 +1,9 @@
+flask
+openai
+torch
+torchvision
+scikit-learn
+Pillow
+python-dotenv
+langchain
+faiss-cpu

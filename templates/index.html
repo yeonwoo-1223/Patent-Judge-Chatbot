@@ -1,365 +1,428 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <title>Patent Judge Chatbot</title>
-    <!-- Font Awesome 아이콘 CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background-color: #f8f8f8;
-            padding: 0 20px;
-        }
+  <meta charset="UTF-8" />
+  <title>Patent Judge Chatbot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body.light {
+      background-color: #f8f8f8;
+      color: #000;
+    }
 
-        header {
-            padding: 15px 20px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    body.dark {
+      background-color: #121212;
+      color: #eee;
+    }
 
-        header img {
-            width: 32px;
-            height: 32px;
-        }
+    body.dark #chat-container {
+      background: #1e1e1e;
+    }
 
-        #image-upload-container {
-            padding: 10px 0;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-            max-width: 100%;
-            margin: 0 auto;
-            display: flex;
-            justify-content: flex-start;
-            padding-left: 20px;
-        }
+    body.dark .user-message {
+      background-color: #2e7d32;
+      color: white;
+    }
 
-        #chat-container {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            width: 100%;
-            max-width: 90vw;
-            margin: 10px auto 0;
-            box-sizing: border-box;
-            background: white;
-            border-radius: 8px 8px 0 0;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            min-height: 300px;
-        }
+    body.dark .bot-message {
+      background-color: #333;
+      color: white;
+    }
 
-        .message-row {
-            display: flex;
-            margin-bottom: 10px;
-            width: 100%;
-        }
+    body.dark #image-upload-container {
+      background: #2c2c2c;
+      border-color: #444;
+    }
 
-        .message-row.user {
-            justify-content: flex-end;
-        }
+    body.dark #input-form.bottom-fixed {
+      background: #1a1a1a;
+    }
 
-        .message-row.bot {
-            justify-content: flex-start;
-        }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px;
+    }
 
-        .message {
-            padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 80%;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
+    header {
+      padding: 15px 20px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-        .user-message {
-            background-color: #DCF8C6;
-            border-bottom-right-radius: 4px;
-            text-align: right;
-        }
+    header img {
+      width: 32px;
+      height: 32px;
+    }
 
-        .bot-message {
-            background-color: #ECECEC;
-            border-bottom-left-radius: 4px;
-            text-align: left;
-        }
+    #chat-container {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 90vw;
+      margin: 10px auto 0;
+      box-sizing: border-box;
+      background: white;
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      min-height: 300px;
+    }
 
-        #input-form.centered {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90vw;
-            max-width: 800px;
-            background: white;
-            box-shadow: 0 0 15px rgba(0,0,0,0.15);
-            border-radius: 10px;
-            padding: 10px 15px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            z-index: 10;
-        }
+    .message-row {
+      display: flex;
+      margin-bottom: 10px;
+      width: 100%;
+    }
 
-        #input-form.bottom-fixed {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90vw;
-            max-width: 900px;
-            background: white;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-            border-radius: 10px 10px 0 0;
-            padding: 10px 15px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            z-index: 10;
-        }
+    .message-row.user {
+      justify-content: flex-end;
+    }
 
-        #question {
-            flex-grow: 1;
-            resize: none;
-            min-height: 40px;
-            max-height: 100px;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            font-size: 16px;
-            font-family: inherit;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s;
-            max-width: 100%;
-        }
+    .message-row.bot {
+      justify-content: flex-start;
+    }
 
-        #question:focus {
-            border-color: #4CAF50;
-        }
+    .message {
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 80%;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
 
-        #send-btn {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            transition: background-color 0.2s;
-        }
+    .user-message {
+      background-color: #DCF8C6;
+      border-bottom-right-radius: 4px;
+      text-align: right;
+    }
 
-        #send-btn:hover {
-            background-color: #45a049;
-        }
+    .bot-message {
+      background-color: #ECECEC;
+      border-bottom-left-radius: 4px;
+      text-align: left;
+    }
 
-        #chat-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        #chat-container::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 3px;
-        }
+    #image-upload-container {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 8px 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      z-index: 11;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-        #loading {
-            text-align: center;
-            color: #666;
-            padding: 10px;
-            font-size: 16px;
-            display: none;
-        }
+    #input-form.bottom-fixed {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90vw;
+      max-width: 900px;
+      background: white;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      border-radius: 10px 10px 0 0;
+      padding: 10px 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      z-index: 10;
+    }
 
-        .image-gallery {
-          display: flex;
-          gap: 8px;
-          margin-top: 8px;
-        }
-        .image-item {
-          text-align: center;
-        }
-        .image-item img {
-          max-width: 100px;
-          border-radius: 6px;
-          display: block;
-          margin: 0 auto;
-        }
-        .image-item .info {
-          font-size: 0.85em;
-          margin-top: 4px;
-          color: #555;
-          white-space: pre-wrap;
-        }
-    </style>
+    #question {
+      flex-grow: 1;
+      resize: none;
+      min-height: 40px;
+      max-height: 100px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 16px;
+      font-family: inherit;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #question:focus {
+      border-color: #4CAF50;
+    }
+
+    #send-btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+
+    #send-btn:hover {
+      background-color: #45a049;
+    }
+
+    #chat-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.2);
+      border-radius: 3px;
+    }
+
+    #loading {
+      text-align: center;
+      color: #666;
+      padding: 10px;
+      font-size: 16px;
+      display: none;
+      font-weight: bold;
+    }
+
+    #loading::after {
+      content: '';
+      display: inline-block;
+      animation: dots 1.2s steps(3, end) infinite;
+    }
+
+    @keyframes dots {
+      0%   { content: ''; }
+      33%  { content: '.'; }
+      66%  { content: '..'; }
+      100% { content: '...'; }
+    }
+
+    .image-gallery {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .image-item {
+      text-align: center;
+      width: 110px;
+    }
+
+    .image-item img {
+      max-width: 100%;
+      border-radius: 6px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .image-item .info {
+      font-size: 0.85em;
+      margin-top: 4px;
+      color: #555;
+      white-space: pre-wrap;
+    }
+
+    body.dark .image-item .info {
+      color: #eee;
+    }
+  </style>
 </head>
-<body>
+<body class="light">
+  <header>
+    <span>📄 특허 판례 챗봇</span>
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="챗봇 아이콘" />
+    <label style="margin-left:auto; display:flex; align-items:center; gap:5px; font-size: 14px;">
+      <input type="checkbox" id="darkToggle" /> 🌙 다크모드
+    </label>
+  </header>
 
-    <header>
-        <span>📄 특허 판례 챗봇</span>
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="챗봇 아이콘" />
-    </header>
+  <div id="chat-container"></div>
 
-    <div id="image-upload-container">
-        <form action="/upload_image" method="post" enctype="multipart/form-data" id="image-upload-form">
-            <label for="image">유사도 확인할 이미지 업로드:</label>
-            <input type="file" name="image" id="image" required />
-            <button type="submit">검색</button>
-        </form>
-    </div>
-
-    <div id="chat-container"></div>
-
-    <form id="input-form" class="bottom-fixed" autocomplete="off">
-        <textarea id="question" placeholder="궁금한 내용을 물어보세요. (예: 기존 특허와 유사한 디자인인지 확인해주세요.)" rows="1" required></textarea>
-        <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+  <div id="image-upload-container">
+    <form action="/upload_image" method="post" enctype="multipart/form-data" id="image-upload-form">
+      <label for="file">유사도 확인할 이미지 업로드:</label>
+      <input type="file" name="image" id="file" required />
+      <button type="submit">검색</button>
     </form>
+  </div>
 
-    <div id="loading"><i class="fas fa-spinner fa-spin"></i> 응답을 기다리는 중...</div>
+  <form id="input-form" class="bottom-fixed" autocomplete="off">
+    <textarea id="question" placeholder="궁금한 내용을 물어보세요. (예: 기존 특허와 유사한 디자인인지 확인해주세요.)" rows="1" required></textarea>
+    <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+  </form>
 
-    <script>
-        const form = document.getElementById('input-form');
-        const textarea = document.getElementById('question');
-        const chatContainer = document.getElementById('chat-container');
-        const loading = document.getElementById('loading');
+  <div id="loading"><span>답변 생성 중</span><span id="dots"></span></div>
 
-        textarea.addEventListener('input', () => {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        });
+  <script>
+    const form = document.getElementById('input-form');
+    const textarea = document.getElementById('question');
+    const chatContainer = document.getElementById('chat-container');
+    const loading = document.getElementById('loading');
 
-        textarea.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                form.requestSubmit();
-            }
-        });
+    textarea.addEventListener('input', () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    });
 
-        function addMessage(text, type) {
-            const row = document.createElement('div');
-            row.className = 'message-row ' + (type === 'user-message' ? 'user' : 'bot');
-
-            const bubble = document.createElement('div');
-            bubble.className = 'message ' + type;
-            bubble.textContent = text;
-
-            row.appendChild(bubble);
-            chatContainer.appendChild(row);
-        }
-
-        function scrollToBottom() {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-            <!-- 추가된 JS: 이미지 업로드 후 말풍선 + 갤러리 렌더링 -->
-
-      const imgForm = document.getElementById('image-upload-form');
-      imgForm.addEventListener('submit', async (e) => {
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        const formData = new FormData(imgForm);
+        form.requestSubmit();
+      }
+    });
 
-        addMessage('이미지를 업로드하고 있어요…', 'user-message');
-        loading.style.display = 'block';
+    function addMessage(text, type) {
+      const row = document.createElement('div');
+      row.className = 'message-row ' + (type === 'user-message' ? 'user' : 'bot');
 
-        try {
-          const res  = await fetch('/upload_image', { method: 'POST', body: formData });
-          const json = await res.json();
+      const bubble = document.createElement('div');
+      bubble.className = 'message ' + type;
+      bubble.textContent = text;
 
-          if (json.error) {
-            addMessage('오류: ' + json.error, 'bot-message');
-          } else {
-            // 1) 챗봇 텍스트 말풍선
-            addMessage(json.answer, 'bot-message');
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+      scrollToBottom();
+    }
 
-            // 2) 이미지 갤러리 말풍선
-            const row = document.createElement('div');
-            row.className = 'message-row bot';
-            const bubble = document.createElement('div');
-            bubble.className = 'message bot-message';
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-            const gallery = document.createElement('div');
-            gallery.className = 'image-gallery';
+    const imgForm = document.getElementById('image-upload-form');
+    imgForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(imgForm);
 
-            json.results.forEach(r => {
-              const item = document.createElement('div');
-              item.className = 'image-item';
+      addMessage('이미지를 업로드하고 있어요…', 'user-message');
+      loading.style.display = 'block';
+      startDotsAnimation();
 
-              const img = document.createElement('img');
-              img.src = r.url;
-              img.alt = r.application_number;
-              item.appendChild(img);
+      try {
+        const res = await fetch('/upload_image', {
+          method: 'POST',
+          body: formData
+        });
+        const json = await res.json();
 
-              const info = document.createElement('div');
-              info.className = 'info';
-              info.textContent = `출원번호: ${r.application_number}\n유사도: ${(r.score*100).toFixed(2)}%`;
-              item.appendChild(info);
+        if (json.error) {
+          addMessage('오류: ' + json.error, 'bot-message');
+        } else {
+          addMessage(json.answer, 'bot-message');
 
-              gallery.appendChild(item);
-            });
+          const row = document.createElement('div');
+          row.className = 'message-row bot';
+          const bubble = document.createElement('div');
+          bubble.className = 'message bot-message';
 
-            bubble.appendChild(gallery);
-            row.appendChild(bubble);
-            chatContainer.appendChild(row);
-          }
-        } catch (err) {
-          addMessage('이미지 처리 중 오류가 발생했습니다.', 'bot-message');
+          const gallery = document.createElement('div');
+          gallery.className = 'image-gallery';
+
+          json.results.forEach(r => {
+            const item = document.createElement('div');
+            item.className = 'image-item';
+
+            const img = document.createElement('img');
+            img.src = r.url;
+            img.alt = r.application_number;
+            item.appendChild(img);
+
+            const info = document.createElement('div');
+            info.className = 'info';
+            info.textContent = `출원번호: ${r.application_number}\n유사도: ${(r.score * 100).toFixed(2)}%`;
+            item.appendChild(info);
+
+            gallery.appendChild(item);
+          });
+
+          bubble.appendChild(gallery);
+          row.appendChild(bubble);
+          chatContainer.appendChild(row);
         }
+      } catch (err) {
+        addMessage('이미지 처리 중 오류가 발생했습니다.', 'bot-message');
+      }
 
-        loading.style.display = 'none';
-        scrollToBottom();
-      });
+      loading.style.display = 'none';
+      stopDotsAnimation();
+      scrollToBottom();
+    });
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const question = textarea.value.trim();
-            if (!question) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = textarea.value.trim();
+      if (!question) return;
 
-            addMessage(question, 'user-message');
-            textarea.value = '';
-            textarea.style.height = 'auto';
+      addMessage(question, 'user-message');
+      textarea.value = '';
+      textarea.style.height = 'auto';
 
-            if (chatContainer.childElementCount === 1) {
-                form.classList.remove('centered');
-                form.classList.add('bottom-fixed');
-            }
+      scrollToBottom();
+      loading.style.display = 'block';
 
-            scrollToBottom();
-            loading.style.display = 'block';
+      startDotsAnimation(); 
 
-            try {
-                const response = await fetch('/ask_bot', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({question})
-                });
-                const data = await response.json();
 
-                if (data.error) {
-                    addMessage('오류: ' + data.error, 'bot-message');
-                } else {
-                    addMessage(data.answer, 'bot-message');
-                }
-            } catch (err) {
-                addMessage('서버 통신 오류 발생', 'bot-message');
-            }
-
-            loading.style.display = 'none';
-            scrollToBottom();
+      try {
+        const response = await fetch('/ask_bot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
         });
+        const data = await response.json();
 
-        window.addEventListener('load', () => {
-            textarea.style.height = textarea.scrollHeight + 'px';
-        });
-    </script>
+        if (data.error) {
+          addMessage('오류: ' + data.error, 'bot-message');
+        } else {
+          addMessage(data.answer, 'bot-message');
+        }
+      } catch (err) {
+        addMessage('서버 통신 오류 발생', 'bot-message');
+      }
+
+      loading.style.display = 'none';
+      scrollToBottom();
+    });
+
+    // ✅ 다크모드 토글 기능
+    document.getElementById('darkToggle').addEventListener('change', function () {
+      document.body.classList.toggle('dark', this.checked);
+      document.body.classList.toggle('light', !this.checked);
+    });
+    let dotInterval;
+
+function startDotsAnimation() {
+  const dots = document.getElementById('dots');
+  let count = 0;
+  dotInterval = setInterval(() => {
+    count = (count + 1) % 4;
+    dots.textContent = '.'.repeat(count);
+  }, 400);
+}
+
+function stopDotsAnimation() {
+  clearInterval(dotInterval);
+  document.getElementById('dots').textContent = '';
+}
+
+
+  </script>
 </body>
 </html>

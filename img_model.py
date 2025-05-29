@@ -2,47 +2,41 @@ import os
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
-# 사전 학습된 모델 (ResNet18)
+# 사전 학습된 모델 로드 (ResNet18)
 model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
 model.eval()
 
-# 이미지 전처리 설정
+# 전처리 함수
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor()
 ])
 
-# 특징 벡터 추출 함수
-def extract_features(image_path):
-    image = Image.open(image_path).convert('RGB')
+# 이미지 1장의 특징 추출
+def extract_feature(img_path):
+    image = Image.open(img_path).convert('RGB')
     image = transform(image).unsqueeze(0)
     with torch.no_grad():
         features = model(image)
     return features.squeeze().numpy()
 
-# 유사한 이미지 찾기
-def find_similar_design(uploaded_image_path):
-    base_path = "static/find_similar_images"
-    uploaded_features = extract_features(uploaded_image_path)
+# 전체 이미지 인덱스 초기화
+def initialize_index(folder):
+    paths, features = [], []
+    for fname in os.listdir(folder):
+        if fname.lower().endswith(('.jpg', '.png', '.jpeg')):
+            full = os.path.join(folder, fname)
+            feat = extract_feature(full)
+            paths.append(full)
+            features.append(feat)
+    return paths, np.array(features)
 
-    best_score = -1
-    best_match = None
-
-    for fname in os.listdir(base_path):
-        if fname.lower().endswith(('.png', '.jpg', '.jpeg')):
-            candidate_path = os.path.join(base_path, fname)
-            candidate_features = extract_features(candidate_path)
-
-            score = cosine_similarity(
-                uploaded_features.reshape(1, -1),
-                candidate_features.reshape(1, -1)
-            )[0][0]
-
-            if score > best_score:
-                best_score = score
-                best_match = fname
-
-    return {"best_match": best_match, "score": round(float(best_score), 4)}
+# 유사 이미지 검색
+def search_similar(img_path, db_paths, db_features, top_k=5):
+    uploaded_feat = extract_feature(img_path).reshape(1, -1)
+    similarities = cosine_similarity(uploaded_feat, db_features)[0]
+    ranked = sorted(zip(db_paths, similarities), key=lambda x: x[1], reverse=True)
+    return ranked[:top_k]

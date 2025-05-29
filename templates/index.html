@@ -1,115 +1,428 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>🧠 Patent-Judge Chatbot</title>
+  <meta charset="UTF-8" />
+  <title>Patent Judge Chatbot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    body.light {
+      background-color: #f8f8f8;
+      color: #000;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: #eee;
+    }
+
+    body.dark #chat-container {
+      background: #1e1e1e;
+    }
+
+    body.dark .user-message {
+      background-color: #2e7d32;
+      color: white;
+    }
+
+    body.dark .bot-message {
+      background-color: #333;
+      color: white;
+    }
+
+    body.dark #image-upload-container {
+      background: #2c2c2c;
+      border-color: #444;
+    }
+
+    body.dark #input-form.bottom-fixed {
+      background: #1a1a1a;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 40px;
-      max-width: 800px;
-      margin: auto;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    #chatbox {
-      border: 1px solid #ccc;
-      padding: 20px;
-      background: white;
-      height: 300px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-    }
-    .user, .bot {
-      margin-bottom: 10px;
-    }
-    .user {
-      text-align: right;
-      color: blue;
-    }
-    .bot {
-      text-align: left;
-      color: green;
-    }
-    #input-area {
+      margin: 0;
+      height: 100vh;
       display: flex;
+      flex-direction: column;
+      padding: 0 20px;
+    }
+
+    header {
+      padding: 15px 20px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
-    input[type="text"] {
-      flex: 1;
+
+    header img {
+      width: 32px;
+      height: 32px;
+    }
+
+    #chat-container {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 90vw;
+      margin: 10px auto 0;
+      box-sizing: border-box;
+      background: white;
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      min-height: 300px;
+    }
+
+    .message-row {
+      display: flex;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .message-row.bot {
+      justify-content: flex-start;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 80%;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .user-message {
+      background-color: #DCF8C6;
+      border-bottom-right-radius: 4px;
+      text-align: right;
+    }
+
+    .bot-message {
+      background-color: #ECECEC;
+      border-bottom-left-radius: 4px;
+      text-align: left;
+    }
+
+    #image-upload-container {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 8px 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      z-index: 11;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #input-form.bottom-fixed {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90vw;
+      max-width: 900px;
+      background: white;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      border-radius: 10px 10px 0 0;
+      padding: 10px 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      z-index: 10;
+    }
+
+    #question {
+      flex-grow: 1;
+      resize: none;
+      min-height: 40px;
+      max-height: 100px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 16px;
+      font-family: inherit;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #question:focus {
+      border-color: #4CAF50;
+    }
+
+    #send-btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+
+    #send-btn:hover {
+      background-color: #45a049;
+    }
+
+    #chat-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.2);
+      border-radius: 3px;
+    }
+
+    #loading {
+      text-align: center;
+      color: #666;
       padding: 10px;
       font-size: 16px;
-    }
-    button {
-      padding: 10px 15px;
-      font-size: 16px;
-    }
-    #result {
-      margin-top: 20px;
+      display: none;
       font-weight: bold;
+    }
+
+    #loading::after {
+      content: '';
+      display: inline-block;
+      animation: dots 1.2s steps(3, end) infinite;
+    }
+
+    @keyframes dots {
+      0%   { content: ''; }
+      33%  { content: '.'; }
+      66%  { content: '..'; }
+      100% { content: '...'; }
+    }
+
+    .image-gallery {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .image-item {
+      text-align: center;
+      width: 110px;
+    }
+
+    .image-item img {
+      max-width: 100%;
+      border-radius: 6px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .image-item .info {
+      font-size: 0.85em;
+      margin-top: 4px;
+      color: #555;
+      white-space: pre-wrap;
+    }
+
+    body.dark .image-item .info {
+      color: #eee;
     }
   </style>
 </head>
-<body>
-  <h1>🧠 특허 판례 + 유사 이미지 판별 챗봇</h1>
+<body class="light">
+  <header>
+    <span>📄 특허 판례 챗봇</span>
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="챗봇 아이콘" />
+    <label style="margin-left:auto; display:flex; align-items:center; gap:5px; font-size: 14px;">
+      <input type="checkbox" id="darkToggle" /> 🌙 다크모드
+    </label>
+  </header>
 
-  <div id="chatbox"></div>
+  <div id="chat-container"></div>
 
-  <div id="input-area">
-    <input type="text" id="message" placeholder="질문을 입력하세요...">
-    <button onclick="sendMessage()">전송</button>
+  <div id="image-upload-container">
+    <form action="/upload_image" method="post" enctype="multipart/form-data" id="image-upload-form">
+      <label for="file">유사도 확인할 이미지 업로드:</label>
+      <input type="file" name="image" id="file" required />
+      <button type="submit">검색</button>
+    </form>
   </div>
 
-  <hr>
-
-  <h2>📤 유사한 디자인 이미지 찾기</h2>
-  <form id="upload-form" enctype="multipart/form-data">
-    <input type="file" id="file" name="file" accept="image/*">
-    <button type="submit">이미지 업로드</button>
+  <form id="input-form" class="bottom-fixed" autocomplete="off">
+    <textarea id="question" placeholder="궁금한 내용을 물어보세요. (예: 기존 특허와 유사한 디자인인지 확인해주세요.)" rows="1" required></textarea>
+    <button type="submit" id="send-btn"><i class="fas fa-paper-plane"></i></button>
   </form>
-  <div id="result"></div>
+
+  <div id="loading"><span>답변 생성 중</span><span id="dots"></span></div>
 
   <script>
-    async function sendMessage() {
-      const message = document.getElementById("message").value;
-      if (!message) return;
-      
-      const chatbox = document.getElementById("chatbox");
-      chatbox.innerHTML += `<div class="user">👤 ${message}</div>`;
-      document.getElementById("message").value = "";
+    const form = document.getElementById('input-form');
+    const textarea = document.getElementById('question');
+    const chatContainer = document.getElementById('chat-container');
+    const loading = document.getElementById('loading');
 
-      const res = await fetch("/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
+    textarea.addEventListener('input', () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    });
 
-      const data = await res.json();
-      chatbox.innerHTML += `<div class="bot">🤖 ${data.response}</div>`;
-      chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    document.getElementById("upload-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fileInput = document.getElementById("file");
-      const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
-
-      const res = await fetch("/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      if (data.error) {
-        document.getElementById("result").innerText = `❌ ${data.error}`;
-      } else {
-        document.getElementById("result").innerText = `✅ 가장 유사한 디자인: ${data.result.best_match} (유사도: ${data.result.score})`;
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
       }
     });
+
+    function addMessage(text, type) {
+      const row = document.createElement('div');
+      row.className = 'message-row ' + (type === 'user-message' ? 'user' : 'bot');
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message ' + type;
+      bubble.textContent = text;
+
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    const imgForm = document.getElementById('image-upload-form');
+    imgForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(imgForm);
+
+      addMessage('이미지를 업로드하고 있어요…', 'user-message');
+      loading.style.display = 'block';
+      startDotsAnimation();
+
+      try {
+        const res = await fetch('/upload_image', {
+          method: 'POST',
+          body: formData
+        });
+        const json = await res.json();
+
+        if (json.error) {
+          addMessage('오류: ' + json.error, 'bot-message');
+        } else {
+          addMessage(json.answer, 'bot-message');
+
+          const row = document.createElement('div');
+          row.className = 'message-row bot';
+          const bubble = document.createElement('div');
+          bubble.className = 'message bot-message';
+
+          const gallery = document.createElement('div');
+          gallery.className = 'image-gallery';
+
+          json.results.forEach(r => {
+            const item = document.createElement('div');
+            item.className = 'image-item';
+
+            const img = document.createElement('img');
+            img.src = r.url;
+            img.alt = r.application_number;
+            item.appendChild(img);
+
+            const info = document.createElement('div');
+            info.className = 'info';
+            info.textContent = `출원번호: ${r.application_number}\n유사도: ${(r.score * 100).toFixed(2)}%`;
+            item.appendChild(info);
+
+            gallery.appendChild(item);
+          });
+
+          bubble.appendChild(gallery);
+          row.appendChild(bubble);
+          chatContainer.appendChild(row);
+        }
+      } catch (err) {
+        addMessage('이미지 처리 중 오류가 발생했습니다.', 'bot-message');
+      }
+
+      loading.style.display = 'none';
+      stopDotsAnimation();
+      scrollToBottom();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = textarea.value.trim();
+      if (!question) return;
+
+      addMessage(question, 'user-message');
+      textarea.value = '';
+      textarea.style.height = 'auto';
+
+      scrollToBottom();
+      loading.style.display = 'block';
+
+      startDotsAnimation(); 
+
+
+      try {
+        const response = await fetch('/ask_bot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        const data = await response.json();
+
+        if (data.error) {
+          addMessage('오류: ' + data.error, 'bot-message');
+        } else {
+          addMessage(data.answer, 'bot-message');
+        }
+      } catch (err) {
+        addMessage('서버 통신 오류 발생', 'bot-message');
+      }
+
+      loading.style.display = 'none';
+      scrollToBottom();
+    });
+
+    // ✅ 다크모드 토글 기능
+    document.getElementById('darkToggle').addEventListener('change', function () {
+      document.body.classList.toggle('dark', this.checked);
+      document.body.classList.toggle('light', !this.checked);
+    });
+    let dotInterval;
+
+function startDotsAnimation() {
+  const dots = document.getElementById('dots');
+  let count = 0;
+  dotInterval = setInterval(() => {
+    count = (count + 1) % 4;
+    dots.textContent = '.'.repeat(count);
+  }, 400);
+}
+
+function stopDotsAnimation() {
+  clearInterval(dotInterval);
+  document.getElementById('dots').textContent = '';
+}
+
+
   </script>
 </body>
 </html>
